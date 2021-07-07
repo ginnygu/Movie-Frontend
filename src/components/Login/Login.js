@@ -5,6 +5,7 @@ import jwtDecode from "jwt-decode";
 import { toast } from "react-toastify";
 import Axios from "../utils/Axios";
 import checkIfUserIsAuth from "../utils/checkIfUserIsAuth";
+import setAxiosAuthToken from "../utils/setAxiosAuthToken";
 
 import "./Login.css";
 export class Login extends Component {
@@ -100,6 +101,9 @@ export class Login extends Component {
       let jwtToken = result.data.payload;
 
       console.log(jwtToken);
+      //call setAxiosAuthToken here
+      setAxiosAuthToken(jwtToken);
+
       let decodedToken = jwtDecode(jwtToken);
       console.log(decodedToken);
 

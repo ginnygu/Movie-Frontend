@@ -3,6 +3,7 @@ import { ToastContainer } from "react-toastify";
 import jwtDecode from "jwt-decode";
 
 import MainRouter from "./MainRouter";
+import setAxiosAuthToken from "./components/utils/setAxiosAuthToken";
 
 import "./App.css";
 
@@ -45,6 +46,7 @@ export class App extends Component {
 
   handleUserLogout = () => {
     window.localStorage.removeItem("jwtToken");
+    setAxiosAuthToken(null);
     this.setState({
       user: null,
     });

@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import axios from "axios";
+import Axios from "../utils/Axios";
 
 export class MovieDetail extends Component {
   state = {
@@ -13,6 +14,8 @@ export class MovieDetail extends Component {
     Title: "",
     imdbID: "",
     isLoading: true,
+    telInput: "",
+    textareaIput: "",
   };
 
   async componentDidMount() {
@@ -70,6 +73,49 @@ export class MovieDetail extends Component {
     );
   };
 
+  handleFormSubmit = async (event) => {
+    event.preventDefault();
+
+    let parsedPhoneNumber = this.state.telInput.split("-").join("");
+
+    try {
+      let message = `
+                      ${this.state.textareaIput}
+                       Here's the movie details:
+                      Actors: ${this.state.Actors}
+                      Plot: ${this.state.Plot}
+      `;
+
+      // let result = await Axios.post(
+      //   "/api/twilio/send-sms",
+      //   {
+      //     to: parsedPhoneNumber,
+      //     message: message,
+      //   },
+      //   {
+      //     headers: {
+      //       Authorization: `Bearer ${window.localStorage.getItem("jwtToken")}`,
+      //     },
+      //   }
+      // );
+
+      let result = await Axios.post("/api/twilio/send-sms", {
+        to: parsedPhoneNumber,
+        message: message,
+      });
+
+      console.log(result);
+    } catch (e) {
+      console.log(e.response);
+    }
+  };
+
+  handleFormChange = (event) => {
+    this.setState({
+      [event.target.name]: event.target.value,
+    });
+  };
+
   render() {
     return (
       <div>
@@ -78,7 +124,30 @@ export class MovieDetail extends Component {
             ...Loading
           </div>
         ) : (
-          this.showMovieDetail()
+          <div>
+            {this.showMovieDetail()}
+
+            <div>
+              <form onSubmit={this.handleFormSubmit}>
+                <input
+                  type="tel"
+                  id="telInput"
+                  name="telInput"
+                  pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
+                  required
+                  placeholder="enter a friend #"
+                  onChange={this.handleFormChange}
+                />
+                <br />
+                <textarea
+                  name="textareaIput"
+                  onChange={this.handleFormChange}
+                ></textarea>
+                <br />
+                <button type="submit">Submit</button>
+              </form>
+            </div>
+          </div>
         )}
       </div>
     );
