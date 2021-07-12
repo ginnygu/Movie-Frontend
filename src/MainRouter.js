@@ -7,6 +7,7 @@ import Home from "./components/Home/Home";
 import Nav from "./components/Nav/Nav";
 import Movie from "./components/Movie/Movie";
 import MovieDetail from "./components/Movie/MovieDetail";
+import Profile from "./components/Profile/Profile";
 import PrivateRoute from "./components/PrivateRoute/PrivateRoute";
 
 const MainRouter = (props) => {
@@ -16,6 +17,12 @@ const MainRouter = (props) => {
       <>
         {/* <Route exact path="/movie" component={Movie} /> */}
         <PrivateRoute exact path="/movie" component={Movie} />
+        <PrivateRoute
+          exact
+          path="/profile"
+          component={Profile}
+          handleUserLogout={props.handleUserLogout}
+        />
         <Route exact path="/sign-up" component={Signup} />
         {/* <Route exact path="/login" component={Login}>
           <Login handleUserLogin={props.handleUserLogin} />
