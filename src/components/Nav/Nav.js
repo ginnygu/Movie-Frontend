@@ -23,6 +23,17 @@ export class Nav extends Component {
                 ""
               )}
             </li>
+
+            <li>
+              {this.props.user ? (
+                <NavLink activeClassName="selected" to="/create-friend">
+                  Create Friend
+                </NavLink>
+              ) : (
+                ""
+              )}
+            </li>
+
             <li>
               {this.props.user ? (
                 <NavLink activeClassName="selected" to="/profile">

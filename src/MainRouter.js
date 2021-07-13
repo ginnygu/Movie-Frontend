@@ -8,6 +8,7 @@ import Nav from "./components/Nav/Nav";
 import Movie from "./components/Movie/Movie";
 import MovieDetail from "./components/Movie/MovieDetail";
 import Profile from "./components/Profile/Profile";
+import CreateFriend from "./components/CreateFriend/CreateFriend";
 import PrivateRoute from "./components/PrivateRoute/PrivateRoute";
 
 const MainRouter = (props) => {
@@ -16,6 +17,7 @@ const MainRouter = (props) => {
       <Nav user={props.user} handleUserLogout={props.handleUserLogout} />
       <>
         {/* <Route exact path="/movie" component={Movie} /> */}
+        <PrivateRoute exact path="/create-friend" component={CreateFriend} />
         <PrivateRoute exact path="/movie" component={Movie} />
         <PrivateRoute
           exact

@@ -16,32 +16,62 @@ export class MovieDetail extends Component {
     isLoading: true,
     telInput: "",
     textareaIput: "",
+    friendsArray: [],
+    selectedFriendFirstName: "",
+    selectedFriendLastName: "",
+    selectedFriendID: "",
+    selectedFriendMobileNumber: "",
+    friendMessage: "",
+    originalMessage: "",
   };
 
   async componentDidMount() {
+    this.fetchMovie();
+    this.fetchAllFriends();
+  }
+
+  fetchAllFriends = async () => {
+    try {
+      let allFriends = await Axios.get("/api/friend/get-all-friends");
+
+      this.setState({
+        friendsArray: allFriends.data.friends,
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  fetchMovie = async () => {
     try {
       let result = await axios.get(
         `https://omdbapi.com/?apikey=6332b1e1&t=${this.props.match.params.movieTitle}`
       );
 
-      this.setState({
-        Actors: result.data.Actors,
-        Awards: result.data.Awards,
-        Country: result.data.Country,
-        Plot: result.data.Plot,
-        Poster: result.data.Poster,
-        Rated: result.data.Rated,
-        Ratings: result.data.Ratings,
-        Title: result.data.Title,
-        imdbID: result.data.imdbID,
-        isLoading: false,
-      });
-
-      console.log(result);
+      this.setState(
+        {
+          Actors: result.data.Actors,
+          Awards: result.data.Awards,
+          Country: result.data.Country,
+          Plot: result.data.Plot,
+          Poster: result.data.Poster,
+          Rated: result.data.Rated,
+          Ratings: result.data.Ratings,
+          Title: result.data.Title,
+          imdbID: result.data.imdbID,
+          isLoading: false,
+        },
+        () => {
+          this.setState({
+            friendMessage: `I think this movie is dope. ${this.state.Title}, ${this.state.Actors} are in it. This is the plot ${this.state.Plot}`,
+            originalMessage: `I think this movie is dope. ${this.state.Title}, ${this.state.Actors} are in it. This is the plot ${this.state.Plot}`,
+          });
+        }
+      );
     } catch (e) {
       console.log(e);
     }
-  }
+  };
 
   showMovieDetail = () => {
     return (
@@ -76,31 +106,11 @@ export class MovieDetail extends Component {
   handleFormSubmit = async (event) => {
     event.preventDefault();
 
-    let parsedPhoneNumber = this.state.telInput.split("-").join("");
-
     try {
-      let message = `
-                      ${this.state.textareaIput}
-                       Here's the movie details:
-                      Actors: ${this.state.Actors}
-                      Plot: ${this.state.Plot}
-      `;
-
-      // let result = await Axios.post(
-      //   "/api/twilio/send-sms",
-      //   {
-      //     to: parsedPhoneNumber,
-      //     message: message,
-      //   },
-      //   {
-      //     headers: {
-      //       Authorization: `Bearer ${window.localStorage.getItem("jwtToken")}`,
-      //     },
-      //   }
-      // );
+      let message = this.state.friendMessage;
 
       let result = await Axios.post("/api/twilio/send-sms", {
-        to: parsedPhoneNumber,
+        to: this.state.selectedFriendMobileNumber,
         message: message,
       });
 
@@ -110,13 +120,23 @@ export class MovieDetail extends Component {
     }
   };
 
-  handleFormChange = (event) => {
+  handleSelectChange = (event) => {
+    // console.log(JSON.parse(event.target.value));
+    // console.log(event.target.value);
+
+    let selectedUser = JSON.parse(event.target.value);
+
     this.setState({
-      [event.target.name]: event.target.value,
+      selectedFriendFirstName: selectedUser.firstName,
+      selectedFriendLastName: selectedUser.lastName,
+      selectedFriendID: selectedUser._id,
+      selectedFriendMobileNumber: selectedUser.mobileNumber,
+      friendMessage: `Hey ${selectedUser.firstName}, ${this.state.originalMessage}`,
     });
   };
 
   render() {
+    console.log(this.state);
     return (
       <div>
         {this.state.isLoading ? (
@@ -127,25 +147,24 @@ export class MovieDetail extends Component {
           <div>
             {this.showMovieDetail()}
 
-            <div>
-              <form onSubmit={this.handleFormSubmit}>
-                <input
-                  type="tel"
-                  id="telInput"
-                  name="telInput"
-                  pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
-                  required
-                  placeholder="enter a friend #"
-                  onChange={this.handleFormChange}
-                />
-                <br />
-                <textarea
-                  name="textareaIput"
-                  onChange={this.handleFormChange}
-                ></textarea>
-                <br />
-                <button type="submit">Submit</button>
-              </form>
+            <div style={{ width: 250, margin: "0 auto", textAlign: "center" }}>
+              <select onChange={this.handleSelectChange}>
+                <option>Select a friend</option>
+                {this.state.friendsArray.map((friend) => {
+                  return (
+                    <option key={friend._id} value={JSON.stringify(friend)}>
+                      {friend.firstName} {friend.lastName}
+                    </option>
+                  );
+                })}
+              </select>
+              <textarea
+                col="50"
+                rows="20"
+                defaultValue={this.state.friendMessage}
+              />
+              <br />
+              <button onClick={this.handleFormSubmit}>Submit</button>
             </div>
           </div>
         )}
