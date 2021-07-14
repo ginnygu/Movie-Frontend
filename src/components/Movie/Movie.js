@@ -94,13 +94,21 @@ export class Movie extends Component {
           searchedMovieTitleSessionStorage
         );
 
+        let totalPageArray = this.getTotalPages(
+          +result.data.totalResults,
+          this.state.perPage
+        );
+
         this.setState({
+          movie: searchedMovieTitleSessionStorage,
           movieArray: result.data.Search,
+          totalPage: +result.data.totalResults, //in batman result is 440
+          pageArray: totalPageArray,
         });
       } else {
         let randomMovieTitle = this.handleRandomTitle();
         //let result = await this.handleSearchMovie(randomMovieTitle);
-        let result = await this.handleSearchMovie("batman");
+        let result = await this.handleSearchMovie(randomMovieTitle);
 
         let totalPageArray = this.getTotalPages(
           +result.data.totalResults,
@@ -108,6 +116,7 @@ export class Movie extends Component {
         );
 
         this.setState({
+          movie: randomMovieTitle,
           movieArray: result.data.Search,
           totalPage: +result.data.totalResults, //in batman result is 440
           pageArray: totalPageArray, //[1,2,3,4...] all the way up to 440
@@ -175,8 +184,17 @@ export class Movie extends Component {
 
       window.sessionStorage.setItem("searchedMovieTitle", this.state.movie);
 
+      let totalPageArray = this.getTotalPages(
+        +result.data.totalResults,
+        this.state.perPage
+      );
+
+      console.log(result);
+
       this.setState({
         movieArray: result.data.Search,
+        totalPage: +result.data.totalResults,
+        pageArray: totalPageArray,
       });
     } catch (e) {
       console.log(e);
@@ -234,10 +252,12 @@ export class Movie extends Component {
             if (number < maxPageLimit + 1 && number > minPageLimit) {
               return (
                 <span
+                  onClick={() => this.handleGoToPage(number)}
                   style={{
                     marginLeft: 15,
                     marginRight: 15,
                     color: currentPage === number ? "red" : "black",
+                    cursor: "pointer",
                   }}
                   key={number}
                 >
@@ -257,6 +277,24 @@ export class Movie extends Component {
     );
   };
 
+  handleGoToPage = (number) => {
+    this.setState(
+      {
+        currentPage: number,
+      },
+      async () => {
+        console.log(this.state.movie);
+        let result = await this.handleSearchMovie(this.state.movie);
+
+        console.log(result);
+
+        this.setState({
+          movieArray: result.data.Search,
+        });
+      }
+    );
+  };
+
   nextPage = () => {
     this.setState(
       (prevState) => {
@@ -266,7 +304,16 @@ export class Movie extends Component {
         };
       },
       async () => {
-        let result = await this.handleSearchMovie("batman");
+        let movie = "";
+
+        let searchedMovieTitleSessionStorage =
+          window.sessionStorage.getItem("searchedMovieTitle");
+
+        movie = searchedMovieTitleSessionStorage
+          ? window.sessionStorage.getItem("searchedMovieTitle")
+          : this.state.movie;
+
+        let result = await this.handleSearchMovie(movie);
 
         this.setState({
           movieArray: result.data.Search,
@@ -298,7 +345,16 @@ export class Movie extends Component {
         };
       },
       async () => {
-        let result = await this.handleSearchMovie("batman");
+        let movie = "";
+
+        let searchedMovieTitleSessionStorage =
+          window.sessionStorage.getItem("searchedMovieTitle");
+
+        movie = searchedMovieTitleSessionStorage
+          ? window.sessionStorage.getItem("searchedMovieTitle")
+          : this.state.movie;
+
+        let result = await this.handleSearchMovie(movie);
 
         this.setState({
           movieArray: result.data.Search,
@@ -360,38 +416,42 @@ export class Movie extends Component {
           <MovieList movieArray={this.state.movieArray} />
         </div>
 
-        <div
-          style={{
-            width: 1200,
-            margin: "0 auto",
-            textAlign: "center",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            marginTop: 50,
-          }}
-        >
-          <button
-            disabled={this.state.currentPage === 1 ? true : false}
-            onClick={this.prevPage}
+        {this.state.totalPage <= 10 ? (
+          ""
+        ) : (
+          <div
+            style={{
+              width: 1200,
+              margin: "0 auto",
+              textAlign: "center",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginTop: 50,
+            }}
           >
-            Prev
-          </button>
+            <button
+              disabled={this.state.currentPage === 1 ? true : false}
+              onClick={this.prevPage}
+            >
+              Prev
+            </button>
 
-          {this.showpagination()}
+            {this.showpagination()}
 
-          <button
-            disabled={
-              this.state.currentPage ===
-              this.state.pageArray[this.state.pageArray.length - 1]
-                ? true
-                : false
-            }
-            onClick={this.nextPage}
-          >
-            Next
-          </button>
-        </div>
+            <button
+              disabled={
+                this.state.currentPage ===
+                this.state.pageArray[this.state.pageArray.length - 1]
+                  ? true
+                  : false
+              }
+              onClick={this.nextPage}
+            >
+              Next
+            </button>
+          </div>
+        )}
 
         {/* <div
           style={{
